@@ -347,6 +347,29 @@
     </main>
     <!-- script -->
 <script>
+     window.onload = async function() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'signin.html'; // Redirect to login page
+
+        alert('Token not found. Please log in again.');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:3000/api/data', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        // Display secure data (if needed)
+        console.log(data); // You can log the data to see it in the console
+      } catch (error) {
+        console.error('Error fetching secure data:', error);
+        alert('Error fetching secure data. Please try again.');
+      }
+    };
     document.addEventListener('DOMContentLoaded', function () {
       const form = document.getElementById('add_user');
       const messageContainer = document.getElementById('message-container');

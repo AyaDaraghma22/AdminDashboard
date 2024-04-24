@@ -6,7 +6,8 @@ const {
   CreateUser,
   FindUser,
   UpdateUser,
-  DeleteUser
+  DeleteUser,
+  Signin
 } = require('../controllers/UserController')
 
 route.get('/', services.homeRoutes)
@@ -15,6 +16,7 @@ route.get('/update_user', services.update_user)
 
 // API
 route.post('/api/users', CreateUser)
+route.post('/api/users', Signin)
 route.get('/api/users', FindUser)
 route.put('/api/users/:id', UpdateUser)
 route.delete('/api/users/:id', DeleteUser)

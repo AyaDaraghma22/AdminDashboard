@@ -1,14 +1,15 @@
 // index.js
 const express = require('express')
 const mongoose = require('mongoose')
+const jwt = require('jsonwebtoken');
 const morgan = require('morgan')
 const bodyparser = require('body-parser')
 const UserRouter = require('./server/routes/UserRouter')
 const path = require('path')
 const cors = require('cors');
-
 const app = express()
 const port = 3000
+const SECRET_KEY = 'mySecretKey';
 
 app.use(morgan('tiny'));
 app.use(express.static('frontend'));
@@ -33,6 +34,42 @@ mongoose.connection.on('error', (err) => {
   console.error('MongoDB connection error:', err)
 })
 
+// Dummy user credentials (replace this with your actual authentication mechanism)
+const users = {
+  admin: 'admin'
+};
+
+// Login route to authenticate user and generate token
+app.post('/signin', (req, res) => {
+  const { username, password } = req.body;
+  if (users[username] && users[username] === password) {
+    const token = jwt.sign({ username }, SECRET_KEY);
+    res.json({ token });
+  } else {
+    res.status(401).json({ message: 'Invalid username or password' });
+  }
+});
+
+// Middleware to verify token for protected routes
+function verifyToken (req, res, next) {
+  const token = req.headers.authorization;
+  if (!token) {
+    return res.status(403).json({ message: 'Token not provided' });
+  }
+
+  jwt.verify(token.split(' ')[1], SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: 'Failed to authenticate token' });
+    }
+    req.user = decoded;
+    next();
+  });
+}
+// Protected route
+app.get('/api/data', verifyToken, (req, res) => {
+  res.json({ message: 'Secure data for authenticated user', user: req.user });
+});
+
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader(
@@ -51,8 +88,9 @@ app.use(express.static(path.join(__dirname, 'frontend')));
 app.use(express.static(path.resolve(__dirname, 'dist')))// Serve static files from the dist directory
 
 app.get('/', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'frontend', 'Basic.html'))
+  res.sendFile(path.resolve(__dirname, 'frontend', 'signin.html'))
 })
+
 // Define route to serve CSS file
 app.get('/style.css', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'style.css'));

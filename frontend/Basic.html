@@ -18,7 +18,7 @@
       * {
         padding: 0;
         margin: 0;
-        box-sizing: border-box;
+        box-gvsizing: border-box;
       }
 
       a {
@@ -34,6 +34,7 @@
       .nav-brand {
         font-size: 1.5em;
         font-weight: bold;
+        
       }
 
       .d-flex {
@@ -198,6 +199,30 @@
         opacity: 0;
       }
 
+      header {
+      background-color: #f8f9fa;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-brand {
+      font-size: 24px;
+      font-weight: bold;
+      text-decoration: none;
+      color: #333;
+
+    }
+    #logoutBtn {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-right: 90%; /* Set maximum left margin */
+
+    }
       .radio input[type="radio"] + .radio-label:before {
         content: "";
         background: var(--border-btn);
@@ -270,9 +295,10 @@
       <nav>
         <div class="container">
           <div class="text-center">
-            <a href="./Basic.html" class="nav-brand text-dark"
-              >User Management System</a
-            >
+                  <!-- Add logout button -->
+                  <button id="logoutBtn">Logout</button>
+            <a href="./Basic.html" class="nav-brand text-dark">User Management System</a>
+      
           </div>
         </div>
       </nav>
@@ -312,6 +338,36 @@
 
     <!-- Script -->
     <script>
+   window.onload = async function() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'signin.html'; // Redirect to login page
+
+        alert('Token not found. Please log in again.');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:3000/api/data', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        // Display secure data (if needed)
+        console.log(data); // You can log the data to see it in the console
+      } catch (error) {
+        console.error('Error fetching secure data:', error);
+        alert('Error fetching secure data. Please try again.');
+      }
+    };
+      // Add event listener to logout button
+      document.getElementById("logoutBtn").addEventListener("click", function() {
+      // Clear token from localStorage
+      localStorage.removeItem('token');
+      // Redirect to signin.html
+      window.location.href = "signin.html";
+    });
       // Fetch and display users
       function fetchUsers() {
         fetch("/User/api/users") // Updated endpoint

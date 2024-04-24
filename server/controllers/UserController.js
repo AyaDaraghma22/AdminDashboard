@@ -1,4 +1,5 @@
 const User = require('../models/UserModel');
+const jwt = require('jsonwebtoken');
 
 exports.CreateUser = async (req, res) => {
   const { name, email, gender, status } = req.body;
@@ -85,4 +86,35 @@ exports.DeleteUser = (req, res) => {
     .catch(err => {
       res.status(500).send({ message: 'Could not delete user with id ' + id, error: err });
     });
+};
+const bcrypt = require('bcryptjs'); // Import bcrypt for password hashing
+
+exports.Signin = async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    // Find user in the database by username
+    const user = await User.findOne({ username });
+
+    // Check if user exists
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid username or password' });
+    }
+
+    // Compare passwords
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ success: false, message: 'Invalid username or password' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ id: user.id, username: user.username }, process.env.SECRET_KEY, { expiresIn: '1h' });
+
+    // Send token as response
+    res.json({ success: true, token });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
 };
